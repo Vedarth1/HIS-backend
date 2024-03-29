@@ -3,6 +3,7 @@ const otpgenerator = require('otp-generator');
 const axios = require("axios");
 const twilio = require('twilio');
 const { otpVerification } = require('../helper/otpValidate');
+const jwt = require('jsonwebtoken');
 
 const accountSID = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -10,6 +11,11 @@ const url = process.env.TWILIO_URL;
 
 const twilioClient = new twilio(accountSID, authToken);
 const client = require('twilio')(accountSID, authToken);
+
+// Function to generate JWT token
+const generateToken = (phoneNumber) => {
+    return jwt.sign({ phoneNumber }, process.env.JWT_SECRET, { expiresIn: '7d' }); // Token expires in 7 days
+};
 
 exports.sendotp = async (req, res) => {
     try {
@@ -32,9 +38,13 @@ exports.sendotp = async (req, res) => {
             from: process.env.TWILIO_PHONENUMBER
         });
 
+        // Generate JWT token
+        const token = generateToken(PhoneNumber);
+
         return res.status(200).json({
             success: true,
-            msg: 'otp sent successfully'
+            token: token,
+            msg: 'otp sent successfully!!!'
         });
     } catch (error) {
         return res.status(400).json({
@@ -78,36 +88,4 @@ exports.verifyotp = async (req, res) => {
             message: error.message
         });
     }
-}
-
-exports.whatsappcurrentlocation = async (req, res) => {
-    const messageBody = {
-        Body: "Twilio HQ",
-        From: "whatsapp:+14155238886",
-        PersistentAction: "geo:37.787890,-122.391664",//add current location from frontend
-        To: "whatsapp:+919579322809"
-    };
-
-    axios.post(url, new URLSearchParams(messageBody), {
-        auth: {
-            username: accountSID,
-            password: authToken
-        }
-    })
-    .then(
-        response => {
-            console.log(response.data.sid);
-            return res.status(200).json({
-                success: true,
-                msg: 'location send!'
-            });
-        },
-        error => {
-            console.log(error);
-            return res.status(400).json({
-                success: false,
-                message: error.message
-            });
-        }
-    );
 }
