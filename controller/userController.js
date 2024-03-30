@@ -66,7 +66,7 @@ exports.verifyotp = async (req, res) => {
         if (!otpdata) {
             return res.status(400).json({
                 success: false,
-                message: 'You entered wrong otp'
+                message: 'Invalid OTP'
             });
         }
 
@@ -74,13 +74,13 @@ exports.verifyotp = async (req, res) => {
         if (!isotpexpired) {
             return res.status(400).json({
                 success: false,
-                message: 'otp expired'
+                message: 'OTP expired'
             });
         }
 
         return res.status(200).json({
             success: true,
-            msg: 'otp verified'
+            message: 'OTP verified successfully'
         });
     } catch (error) {
         return res.status(400).json({
@@ -88,4 +88,4 @@ exports.verifyotp = async (req, res) => {
             message: error.message
         });
     }
-}
+};
